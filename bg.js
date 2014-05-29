@@ -106,9 +106,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 	if (request.type == 'popup') {
 		var viewer = chrome.extension.getURL('viewer.html');
 
-		win = window.open(viewer, 'ANALYZER', 'width=600,height=600,location=0,menubar=0,status=1,toolbar=0,resizable=1,scrollbars=1');
+		var win = window.win = window.open(viewer, 'ANALYZER', 'width=600,height=600,location=0,menubar=0,status=1,toolbar=0,resizable=1,scrollbars=1');
 
-		console.log(window.meep = win);
 		setTimeout(function(){
 			win.document.body.appendChild(html.root);
 		}, 100);
