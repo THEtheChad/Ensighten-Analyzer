@@ -82,6 +82,32 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		}
 	}
 
+	if(request.type == 'publish'){
+		html.reset();
+		html.table();
+
+		var deployments = request.data.deployments || [];
+		var conditions = request.data.conditions || [];
+
+		html
+			.tr()
+				.td('deployments')
+				.td();
+
+		deployments.forEach(function(dep){
+			html.div(dep.name);
+		});
+
+		html
+			.tr()
+				.td('conditions')
+				.td();
+
+		conditions.forEach(function(cond){
+			html.div(cond.name);
+		});
+	}
+
 	if (request.type == 'scripts') {
 		var scripts = request.data;
 
@@ -91,8 +117,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 				html
 					.tr()
-					.td('<a href="' + url + '" target="_blank">DIDs</a>')
-					.td();
+						.td('<a href="' + url + '" target="_blank">DIDs</a>')
+						.td();
 
 				var regEx = /,\s*-?\d+?\s*,\s*(-?\d+?)\s*\)|,\s*-?\d+?\s*,\s*\[.+?\]\s*,\s*(-?\d+?)\s*,\s*\[.+?\]\s*\)/g;
 

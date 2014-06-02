@@ -1,13 +1,39 @@
+function sendData(id, data) {
+	var e = new CustomEvent('PAGEMESSENGER', {
+		detail: {
+			id: id,
+			data: data
+		}
+	});
+	document.dispatchEvent(e);
+}
+
+if(/manage\.ensighten\.com/i.test(window.location.host)){
+	Sauron.on().controller('deploy/publish/confirm').start(function($modal, data, cb){
+    _.parallel([
+      function(cb){
+        Sauron.voice('deploy/getCommitted', {'spaceId': data.spaceId}, cb);
+      },
+      function(cb){
+        Sauron.voice('condition/getUpdatedConditionsSinceLastPublish', {'spaceId': data.spaceId}, cb);
+      }
+    ], function(err, output){
+    	if(err) return;
+
+    	var deps = output[0];
+    	var cond = output[1];
+
+    	console.log('publish', window.meep = output);
+
+    	sendData('publish', {
+    		deployments: deps || [],
+    		conditions: cond || []
+    	});
+    });
+  });
+}
+
 if(window.Bootstrapper){
-	function sendData(id, data) {
-		var e = new CustomEvent('PAGEMESSENGER', {
-			detail: {
-				id: id,
-				data: data
-			}
-		});
-		document.dispatchEvent(e);
-	}
 
 	function sendNexusScripts() {
 		var scripts = document.getElementsByTagName('script');
@@ -17,9 +43,7 @@ if(window.Bootstrapper){
 			var src = scripts[i].src;
 
 			if (/nexus/.test(src)){
-				console.log('ANALYZER: (nexus) ' + src);
 				if(/Bootstrap/i.test(src) || /code/i.test(src)){
-					console.log('ANALYZER: (pass) ' + src);
 					nexus.push(src);
 				}
 			}

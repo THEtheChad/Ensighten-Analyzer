@@ -16,6 +16,12 @@ getData('scripts', function(data){
 	});
 });
 
+getData('publish', function(data){
+	chrome.runtime.sendMessage({type:'publish',data:data}, function(response){
+	  console.log(response);
+	});
+});
+
 var s = document.createElement('script');
 s.src = chrome.extension.getURL('pageAnalyzer.js');
 s.onload = function() {
