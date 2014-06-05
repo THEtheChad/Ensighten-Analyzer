@@ -1,15 +1,15 @@
 function HtmlFactory(ele) {
-	this.root = ele || document.createElement('div');
+	this._root = ele || document.createElement('div');
 	this.reset();
 }
 HtmlFactory.prototype = {
 	setRoot: function(ele){
-		ele.innerHTML = this.root.innerHTML;
+		ele.innerHTML = this._root.innerHTML;
 
-		if(this.current == this.root){
+		if(this.current == this._root){
 			this.current = ele;
 		}
-		this.root = ele;
+		this._root = ele;
 	},
 
 	create: function(type, html){
@@ -31,13 +31,13 @@ HtmlFactory.prototype = {
 	},
 
 	reset: function(){
-		this.current = this.root;
-		this.root.innerHTML = '';
+		this.current = this._root;
+		this._root.innerHTML = '';
 		this.last = {};
 	},
 
 	root: function(){
-		this.current = this.root;
+		this.current = this._root;
 		return this;
 	},
 
@@ -89,6 +89,8 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		var deployments = request.data.deployments || [];
 		var conditions = request.data.conditions || [];
 
+		console.log(deployments);
+
 		html
 			.tr()
 				.td('deployments')
@@ -103,9 +105,45 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 				.td('conditions')
 				.td();
 
+	  var btn = document.createElement('BUTTON');
+	  btn.innerHTML = 'HTML';
+	  btn.addEventListener('click', function(evt){
+	  	showHTML(deployments);
+	  }, false);
+
+	  html._root.appendChild(btn);
+
 		conditions.forEach(function(cond){
 			html.div(cond.name);
 		});
+	}
+
+	function showHTML(data){
+		var htmlViewer = window.open(viewer, 'HTML', 'width=600,height=600,location=0,menubar=0,status=1,toolbar=0,resizable=1,scrollbars=1');
+
+		var html = new HtmlFactory();
+
+		html
+			.table()
+			.tr();
+
+		var props = ['id','name','notes','isDisabled','executionTime','deploymentDependencyIds','spaceName','conditionValues'];
+		props.forEach(function(name){
+			html.td(name);
+		});
+		html.tr();
+
+		data.forEach(function(dep){
+			html.tr();
+			
+			props.forEach(function(name){
+				html.td(dep[name]);
+			});
+		});
+
+		setTimeout(function(){
+			htmlViewer.document.body.appendChild(html._root);
+		}, 100);
 	}
 
 	if (request.type == 'scripts') {
@@ -114,10 +152,24 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		for (var i = 0, l = scripts.length; i < l; i++) {
 			getFile(scripts[i], function(contents, url) {
 				var match;
+				var endpoint;
+
+				if(/Bootstrap/i.test(url)){
+					endpoint = 'Bootstrap';
+				}
+				else{
+					var id = /ruleId=(.*)/.exec(url);
+					if(!id){
+						endpoint = 'Unknown';
+					}
+					else{
+						endpoint = 'Rule: ' + id[1];
+					}
+				}
 
 				html
 					.tr()
-						.td('<a href="' + url + '" target="_blank">DIDs</a>')
+						.td('<a href="' + url + '" target="_blank">' + endpoint + '</a>')
 						.td();
 
 				var regEx = /,\s*-?\d+?\s*,\s*(-?\d+?)\s*\)|,\s*-?\d+?\s*,\s*\[.+?\]\s*,\s*(-?\d+?)\s*,\s*\[.+?\]\s*\)/g;
@@ -135,7 +187,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		var win = window.win = window.open(viewer, 'ANALYZER', 'width=600,height=600,location=0,menubar=0,status=1,toolbar=0,resizable=1,scrollbars=1');
 
 		setTimeout(function(){
-			win.document.body.appendChild(html.root);
+			win.document.body.appendChild(html._root);
 		}, 100);
 		// var popup = chrome.extension.getViews({
 		// 	type: 'popup'
