@@ -113,13 +113,22 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 	  html._root.appendChild(btn);
 
+	  var btn = document.createElement('BUTTON');
+	  btn.innerHTML = 'CSV';
+	  btn.addEventListener('click', function(evt){
+	  	showCSV(deployments);
+	  }, false);
+
+	  html._root.appendChild(btn);
+
 		conditions.forEach(function(cond){
 			html.div(cond.name);
 		});
 	}
 
+	var props = ['id','name','notes','isDisabled','executionTime','deploymentDependencyIds','spaceName','conditionValues'];
 	function showHTML(data){
-		var htmlViewer = window.open(viewer, 'HTML', 'width=600,height=600,location=0,menubar=0,status=1,toolbar=0,resizable=1,scrollbars=1');
+		var htmlViewer = window.open(null, 'HTML', 'width=600,height=600,location=0,menubar=0,status=1,toolbar=0,resizable=1,scrollbars=1');
 
 		var html = new HtmlFactory();
 
@@ -127,7 +136,6 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 			.table()
 			.tr();
 
-		var props = ['id','name','notes','isDisabled','executionTime','deploymentDependencyIds','spaceName','conditionValues'];
 		props.forEach(function(name){
 			html.td(name);
 		});
@@ -144,6 +152,47 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 		setTimeout(function(){
 			htmlViewer.document.body.appendChild(html._root);
 		}, 100);
+	}
+
+	function showCSV(data){
+		var str = '';
+		var row = [];
+
+		props.forEach(function(name){
+			row.push(name);
+		});
+
+		str += row.join(',') + '\r\n';
+
+		data.forEach(function(dep){
+			var row = [];
+
+			props.forEach(function(name){
+				row.push(dep[name]);
+			});
+
+			str += row.join(',') + '\r\n';
+		});
+
+		str = 'data:text/csv;charset=utf-8,' + encodeURIComponent(str);
+
+		var a = document.createElement('a');
+		a.href = str;
+		a.target = '_blank';
+		a.download = 'deployments.csv';
+
+		document.body.appendChild(a);
+		a.click();
+
+
+		// str = encode_utf8(str);
+		// console.log(str);
+
+		// window.open(str, 'CSV', 'width=600,height=600,location=0,menubar=0,status=1,toolbar=0,resizable=1,scrollbars=1');
+	}
+
+	function encode_utf8(s) {
+	  return unescape(encodeURIComponent(s));
 	}
 
 	if (request.type == 'scripts') {
