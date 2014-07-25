@@ -56,7 +56,7 @@ if(window.Bootstrapper){
 		var options = Bootstrapper.ensightenOptions;
 
 		var data = {
-			'published': new Date(options.generatedOn),
+			'published': (new Date(options.generatedOn)).toString(),
 			'space': options.publishPath,
 			'test?': /test/.test(options.nexus) ? 'True' : 'False'
 		};
